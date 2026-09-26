@@ -6,8 +6,4 @@ enum AppGroup {
     static var containerURL: URL? {
         FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: identifier)
     }
-
-    static var pingURL: URL? {
-        containerURL?.appendingPathComponent("ping.txt")
-    }
 }
