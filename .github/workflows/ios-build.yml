@@ -22,21 +22,25 @@ jobs:
           mkdir -p ~/private_keys
           echo -n "$APPSTORE_API_PRIVATE_KEY" | base64 --decode > ~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
       # 무서명 아카이브는 App Group 엔타이틀먼트가 바이너리에 안 들어간다.
-      # ad-hoc(-) 서명으로 엔타이틀먼트만 박고, 배포 서명은 export의 cloud signing이 한다.
-      - name: Archive (ad-hoc signed)
+      # iOS 26 SDK는 xcodebuild의 ad-hoc 서명을 막으므로, 무서명 아카이브 후 codesign으로
+      # 엔타이틀먼트만 박는다(appex 먼저). 배포 서명은 export의 cloud signing이 한다.
+      - name: Archive (unsigned)
         run: |
           xcodebuild -project PhotoWidget.xcodeproj -scheme PhotoWidget -configuration Release \
             -destination 'generic/platform=iOS' -archivePath build/PhotoWidget.xcarchive archive \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="-" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }} \
             CURRENT_PROJECT_VERSION=${{ github.run_number }}
-      - name: Show archived entitlements
+      - name: Embed entitlements
         run: |
           APP=build/PhotoWidget.xcarchive/Products/Applications/PhotoWidget.app
+          APPEX="$APP/PlugIns/PhotoWidgetExtension.appex"
+          codesign --force --sign - --entitlements Widget/PhotoWidgetExtension.entitlements "$APPEX"
+          codesign --force --sign - --entitlements App/PhotoWidget.entitlements "$APP"
+          codesign -d --entitlements - "$APPEX"
           codesign -d --entitlements - "$APP"
-          codesign -d --entitlements - "$APP/PlugIns/PhotoWidgetExtension.appex"
       - name: Write exportOptions.plist
         run: |
           cat > build/exportOptions.plist <<EOF
