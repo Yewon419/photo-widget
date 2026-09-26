@@ -13,3 +13,4 @@
 - XcodeGen은 타깃 수준에서 `TARGETED_DEVICE_FAMILY`를 덮어쓴다 → 아이폰 전용은 타깃 settings에 넣는다. 아니면 iPad 멀티태스킹 방향 검증으로 업로드 거부.
 - XcodeGen 생성 Info.plist는 `CFBundleVersion`이 고정 "1" → `$(CURRENT_PROJECT_VERSION)`을 명시해야 CI run number가 빌드 번호가 된다.
 - App Group 생성과 번들 ID 연결, ASC 앱 레코드 생성은 API에 없다 → 웹에서 한다.
+- 로컬에 Xcode가 없어 컴파일 확인이 CI 한 바퀴(~5분)다 → SwiftUI 모디파이어 반환 타입을 추측하지 말 것. `Image.widgetAccentedRenderingMode`는 `Image`가 아니라 `some View`를 반환한다.
