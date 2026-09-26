@@ -110,12 +110,7 @@ struct PhotoWidgetView: View {
 
     @ViewBuilder
     private func photo(_ image: UIImage) -> some View {
-        let fill = Color.clear.overlay {
-            Image(uiImage: image)
-                .resizable()
-                .fullColorWhenAccented()
-                .scaledToFill()
-        }
+        let fill = Color.clear.overlay { PhotoImage(image: image) }
         switch family {
         case .accessoryCircular:
             fill.clipShape(Circle())
@@ -146,13 +141,21 @@ struct PhotoWidgetView: View {
     }
 }
 
-private extension Image {
-    /// Keeps photos in color on the iOS 18 tinted home screen instead of a flat tint.
-    func fullColorWhenAccented() -> Image {
+/// Keeps photos in color on the iOS 18 tinted home screen instead of a flat tint.
+private struct PhotoImage: View {
+    let image: UIImage
+
+    var body: some View {
         if #available(iOS 18.0, *) {
-            return widgetAccentedRenderingMode(.fullColor)
+            Image(uiImage: image)
+                .resizable()
+                .widgetAccentedRenderingMode(.fullColor)
+                .scaledToFill()
+        } else {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
         }
-        return self
     }
 }
 
